@@ -91,6 +91,9 @@ def resolve_path(path):
     path = path.strip('/').split('/')
     func_name = path[0]
     args = path[1:]
+    # Make sure two operands supplied if mathematical function called
+    if func_name and len(args) != 2:
+        raise ValueError
     try:
         func = functions[func_name]
     except KeyError:
@@ -102,7 +105,6 @@ def application(environ, start_response):
     headers = [('Content-type','text/html')]
     try:
         path = environ.get('PATH_INFO',None)
-        print('Path = {}'.format(path))
         if not path:
             raise NameError
         func, args = resolve_path(path)
@@ -114,6 +116,9 @@ def application(environ, start_response):
     except ZeroDivisionError:
         status = "400 Bad Request"
         body = "<h1>Zero Division Error</h1>"
+    except ValueError:
+        status = "400 Bad Request"
+        body = "<h1>Incorrect Number of Arguments Provided</h1>"
     except Exception:
         status = "500 Internal Server Error"
         body = "<h1>Internal Server Error</h1>"
